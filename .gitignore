@@ -1,0 +1,13 @@
+.env.local
+*.db
+__pycache__/
+*.pyc
+venv/
+node_modules/
+rn/android/build/
+rn/android/.gradle/
+rn/android/app/build/
+rn/android/local.properties
+rn/ios/Pods/
+rn/ios/build/
+.DS_Store
