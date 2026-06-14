@@ -67,8 +67,12 @@ export class AgoraSession {
       this.cb.onError?.(error);
     });
 
-    // Subscribe BEFORE /startAgent so we don't miss the greeting.
+    // Bind the toolkit's listeners BEFORE /startAgent so we don't miss the
+    // greeting. NOTE: the TS toolkit's subscribeMessage only binds listeners —
+    // it does NOT subscribe the RTM channel. RTM 2.x needs an explicit channel
+    // subscribe for messages to arrive, so we do that next.
     this.ai.subscribeMessage(config.channelName);
+    await this.rtm.subscribeChannel(config.channelName);
     console.log('DIAG ai.subscribed', config.channelName);
   }
 
@@ -79,6 +83,9 @@ export class AgoraSession {
   async stop(): Promise<void> {
     try {
       this.ai?.unsubscribe();
+      if (this.channel) {
+        await this.rtm?.unsubscribeChannel(this.channel);
+      }
       this.rtc?.leave();
       await this.rtm?.logout();
       this.ai?.destroy();

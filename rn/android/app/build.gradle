@@ -107,7 +107,15 @@ android {
     }
 
     // react-native-agora (RTC) and agora-react-native-rtm (RTM) both bundle
-    // libaosl.so; pick the first to resolve the duplicate native lib conflict.
+    // their own libaosl.so, and the two versions differ: RTC 4.5.x needs newer
+    // aosl symbols (e.g. aosl_mpq_set_named_oneshot_timer) that the RTM 2.2.x
+    // copy lacks. RN autolinking sorts agora-react-native-rtm first, so a bare
+    // pickFirst keeps the OLDER (RTM) libaosl and RTC fails to dlopen at runtime
+    // ("cannot locate symbol ... referenced by libagora-rtc-sdk.so").
+    //
+    // Fix: the newer RTC libaosl.so is vendored under src/main/jniLibs/<abi>/.
+    // Local module jniLibs sort first in the merge, so pickFirst keeps OUR copy
+    // (the newer aosl) — which is a superset that satisfies both RTC and RTM.
     packagingOptions {
         jniLibs {
             pickFirsts += ["**/libaosl.so"]

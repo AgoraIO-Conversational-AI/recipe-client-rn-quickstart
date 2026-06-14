@@ -41,6 +41,27 @@ export class RtmEngineAdapter implements RTMEngine {
     await this.client.login({ token });
   }
 
+  /**
+   * Subscribe to the RTM channel so the agent's transcript/presence messages
+   * are delivered to the bound `'message'`/`'presence'` listeners. RTM 2.x does
+   * NOT deliver channel messages on login alone — an explicit subscribe is
+   * required. The TS toolkit's `subscribeMessage` only binds listeners; it does
+   * not subscribe the channel, so the consumer must (unlike the native iOS/
+   * Android toolkits, which subscribe internally).
+   */
+  async subscribeChannel(channelName: string): Promise<void> {
+    await this.client.subscribe(channelName, {
+      withMessage: true,
+      withPresence: true,
+      withMetadata: false,
+      withLock: false,
+    });
+  }
+
+  async unsubscribeChannel(channelName: string): Promise<void> {
+    await this.client.unsubscribe(channelName);
+  }
+
   async logout(): Promise<void> {
     await this.client.logout();
   }
@@ -96,7 +117,27 @@ export class RtmEngineAdapter implements RTMEngine {
     }
     if (eventName === 'presence') {
       return (event: PresenceEvent) => {
-        listener(event);
+        // The toolkit's `_handleRtmPresence` reads `presence.stateChanged =
+        // { state, turn_id }` to emit AGENT_STATE_CHANGED. RN delivers the
+        // agent's state as `stateItems: { key, value }[]` (a presence state
+        // change), so fold them into a map and synthesize `stateChanged` —
+        // matching the native iOS/Android toolkits, which read
+        // states["state"] / states["turn_id"].
+        const states: Record<string, string> = {};
+        for (const item of event.stateItems ?? []) {
+          if (item.key != null) {
+            states[item.key] = item.value ?? '';
+          }
+        }
+        const stateChanged =
+          typeof states.state === 'string'
+            ? { state: states.state, turn_id: states.turn_id ?? '0' }
+            : undefined;
+        listener({
+          publisher: event.publisher,
+          timestamp: event.timestamp,
+          stateChanged,
+        });
       };
     }
     // 'status'/'linkState' and any other event: pass through unchanged.
