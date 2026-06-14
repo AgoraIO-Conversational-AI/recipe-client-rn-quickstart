@@ -1,0 +1,3 @@
+This project depends on, but does not vendor, the engine-agnostic
+`agora-agent-client-toolkit` npm package (MIT) for transcript rendering. The
+React Native engine adapters in `rn/src/agora/` are original to this repo.
