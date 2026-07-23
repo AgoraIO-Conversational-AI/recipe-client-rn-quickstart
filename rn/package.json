@@ -11,7 +11,7 @@
   },
   "dependencies": {
     "@react-native/new-app-screen": "0.86.0",
-    "agora-agent-client-toolkit": "^1.2.0",
+    "agora-agent-client-toolkit": "^2.9.0",
     "agora-react-native-rtm": "^2.2.6",
     "react": "19.2.3",
     "react-native": "0.86.0",
