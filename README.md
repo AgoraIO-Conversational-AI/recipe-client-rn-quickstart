@@ -38,11 +38,22 @@ recipe-client-rn-quickstart/
 
 ### 1. Backend
 
+macOS/Linux:
+
 ```bash
 cd server
 uv venv venv && . venv/bin/activate
 uv pip install -r requirements.txt -r requirements-dev.txt
 python src/server.py        # binds 0.0.0.0:8000
+```
+
+Windows PowerShell:
+
+```powershell
+cd server
+py -3 -m venv venv
+.\venv\Scripts\python.exe -m pip install -r requirements.txt -r requirements-dev.txt
+.\venv\Scripts\python.exe src\server.py
 ```
 
 Provide `AGORA_APP_ID` / `AGORA_APP_CERTIFICATE` via `.env.local` (see
